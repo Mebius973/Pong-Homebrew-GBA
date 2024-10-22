@@ -15,14 +15,26 @@
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",
-            "miDebuggerServerAddress": "localhost:2345",
-            "miDebuggerPath": "C:\\devkitPro\\devkitARM\\bin\\arm-none-eabi-gdb.exe",
-            "setupCommands": [
-                {
-                    "text": "shell start /b \"\" \"C:/Program Files/mGBA/mGBA.exe\" -g \"${workspaceFolder}/Pong-Homebrew-GBA.elf\""
-                }
-            ],
-            "preLaunchTask": "make"
+            "linux": {
+                "miDebuggerServerAddress": "localhost:2345",
+                "miDebuggerPath": "/opt/devkitpro/devkitARM/bin/arm-none-eabi-gdb",
+                "setupCommands": [
+                    {
+                        "text": "shell start /b \"\" \"/usr/bin/mgba\" -g \"${workspaceFolder}/Pong-Homebrew-GBA.elf\""
+                    }
+                ],
+            },
+            "windows": {
+                "miDebuggerServerAddress": "localhost:2345",
+                "miDebuggerPath": "C:/devkitPro/devkitARM/bin/arm-none-eabi-gdb.exe",
+                "setupCommands": [
+                    {
+                        "text": "shell start /b \"\" \"C:/Program Files/mGBA/mGBA.exe\" -g \"${workspaceFolder}/Pong-Homebrew-GBA.elf\""
+                    }
+                ],
+            },
+            "preLaunchTask": "gdb-debug", 
+            "postDebugTask": "stop emulation"
         }
     ]
 }

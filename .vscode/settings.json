@@ -13,7 +13,14 @@
   "terminal.integrated.defaultProfile.windows": "MSYS2 UCRT64",
   "makefile.launchConfigurations": [
     {
-      "cwd": "C:\\Users\\Mebius\\Pong-Homebrew-GBA",
+      "cwd": "/home/mebius/Pong-Homebrew-GBA",
+      "binaryPath": "/usr/bin/mgba",
+      "binaryArgs": [
+        "/home/mebius/Pong-Homebrew-GBA/Pong-Homebrew-GBA.gba"
+      ]
+    },
+    {
+      "cwd": "C:/Users/Mebius/Pong-Homebrew-GBA",
       "binaryPath": "C:/Program Files/mGBA/mGBA.exe",
       "binaryArgs": [
         "C:/Users/Mebius/Pong-Homebrew-GBA/Pong-Homebrew-GBA.gba"
@@ -30,5 +37,6 @@
     "characters.h": "c",
     "rect.h": "c",
     "limits": "c"
-  }
+  },
+  "makefile.buildLog": "build.log"
 }
