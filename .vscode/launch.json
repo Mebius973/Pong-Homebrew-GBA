@@ -7,7 +7,7 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "preLaunchTask": "make debug", 
+            
             "postDebugTask": "stop emulation",
             "serverLaunchTimeout": 10000,
             "targetArchitecture": "arm",
@@ -18,14 +18,17 @@
             "cwd": "\"${workspaceFolder}\"",
             "program": "\"${workspaceFolder}/Pong-Homebrew-GBA.elf\"",
             "linux": {    
+                "preLaunchTask": "gdb-debug",
                 "miDebuggerPath": "/opt/devkitpro/devkitARM/bin/arm-none-eabi-gdb",
                 "setupCommands": [
                     {
-                        "text": "shell start /b \"\" \"/usr/bin/mgba\" -g \"${workspaceFolder}/${workspaceFolderBasename}.elf\""
-                    }
-                ]
+                        "description": "Enable pretty-printing for gdb",
+                        "ignoreFailures": true,
+                        "text": "file ${workspaceFolder}/${workspaceFolderBasename}.elf -enable-pretty-printing"
+                    }]
             },
             "windows": {
+                "preLaunchTask": "make debug",
                 "miDebuggerPath": "C:/devkitPro/devkitARM/bin/arm-none-eabi-gdb.exe",
                 "setupCommands": [
                     {

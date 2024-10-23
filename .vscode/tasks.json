@@ -32,5 +32,37 @@
             "type": "shell",
             "command": "make clean"
         },
+        {
+            "label": "gdb-debug",
+            "type": "shell",
+            "dependsOn": ["make debug"],
+            "isBackground": true,
+            "linux":{
+                "command": "/usr/bin/mgba",
+                "args": ["-g", "${workspaceFolder}/${workspaceFolderBasename}.gba"]
+            },
+            "presentation": {
+                "clear": true,
+                "reveal": "always",
+                "panel": "new"
+            },
+            "problemMatcher": [
+                {
+                  "pattern": [
+                    {
+                      "regexp": ".",
+                      "file": 1,
+                      "location": 2,
+                      "message": 3
+                    }
+                  ],
+                  "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": ".",
+                    "endsPattern": ".",
+                  }
+                }
+            ]
+        }
     ]
 }
