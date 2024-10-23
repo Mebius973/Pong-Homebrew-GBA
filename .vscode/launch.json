@@ -7,34 +7,32 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
+            "preLaunchTask": "make debug", 
+            "postDebugTask": "stop emulation",
+            "serverLaunchTimeout": 10000,
             "targetArchitecture": "arm",
-            "program": "${workspaceFolder}/Pong-Homebrew-GBA.elf",
-            "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "environment": [],
-            "externalConsole": false,
+            "stopAtEntry": true,
+            "externalConsole": true,
             "MIMode": "gdb",
-            "linux": {
-                "miDebuggerServerAddress": "localhost:2345",
+            "miDebuggerServerAddress": "localhost:2345",
+            "cwd": "\"${workspaceFolder}\"",
+            "program": "\"${workspaceFolder}/Pong-Homebrew-GBA.elf\"",
+            "linux": {    
                 "miDebuggerPath": "/opt/devkitpro/devkitARM/bin/arm-none-eabi-gdb",
                 "setupCommands": [
                     {
-                        "text": "shell start /b \"\" \"/usr/bin/mgba\" -g \"${workspaceFolder}/Pong-Homebrew-GBA.elf\""
+                        "text": "shell start /b \"\" \"/usr/bin/mgba\" -g \"${workspaceFolder}/${workspaceFolderBasename}.elf\""
                     }
-                ],
+                ]
             },
             "windows": {
-                "miDebuggerServerAddress": "localhost:2345",
                 "miDebuggerPath": "C:/devkitPro/devkitARM/bin/arm-none-eabi-gdb.exe",
                 "setupCommands": [
                     {
-                        "text": "shell start /b \"\" \"C:/Program Files/mGBA/mGBA.exe\" -g \"${workspaceFolder}/Pong-Homebrew-GBA.elf\""
+                        "text": "shell start /b \"\" \"C:/Program Files/mGBA/mGBA.exe\" -g \"${workspaceFolder}/${workspaceFolderBasename}.elf\""
                     }
                 ],
-            },
-            "preLaunchTask": "gdb-debug", 
-            "postDebugTask": "stop emulation"
+            }
         }
     ]
 }
