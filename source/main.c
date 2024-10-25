@@ -4,39 +4,44 @@
 #include <gba_input.h>
 #include <stdio.h>
 #include "graphics.h"
+#include "game.h"
+#include "rect.h"
 
 int main(void) {
 	irqInit();
 	irqEnable(IRQ_VBLANK);
 
-	/* Set GBA to Mode 3 (A Bitmap Mode) */
-	SetMode( MODE_3 | BG2_ON );
+	rect ball;
+	rect computerPlayer;
+	rect humanPlayer;
 
-    drawBackground();
-
-	/* Draw Center Line */
-	drawLine();
-
-	/* print "Press start button" */
-	displayStartText();	
+	drawSplashscreen();
 
 	bool gameStarted = false;
+    bool pointScored = false;
+	bool nextGame = false;
+
+	initGame(&ball, &computerPlayer, &humanPlayer);
 
 	while (1) {
 		VBlankIntrWait();
 
-		/* Respond to input*/
-		scanKeys();
-		int keys_pressed = keysDown();
-		int keys_released = keysUp();
-		
-		if(keys_pressed & KEY_START && !gameStarted) {
-			initGraphics();
-			gameStarted = true; 
+  		scanKeys();
+    	int keys_pressed = keysDown();
+    	int keys_released = keysUp();
+		if (!gameStarted && keys_pressed == KEY_START) {
+			gameStarted = true;
+			drawInitialGraphics();
 		}
-		
-		if(gameStarted) {
-			playGame(keys_pressed, keys_released);
+
+		if (gameStarted) {
+			playGame(keys_pressed, keys_released, &pointScored, &nextGame, &ball, &computerPlayer, &humanPlayer);
+			drawGraphics(pointScored, &ball, &computerPlayer, &humanPlayer);	
+		}
+
+		if (nextGame) {
+			nextGame = false;
+			drawInitialGraphics();
 		}
 	}
 }

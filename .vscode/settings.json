@@ -36,7 +36,8 @@
     "stdio.h": "c",
     "characters.h": "c",
     "rect.h": "c",
-    "limits": "c"
+    "limits": "c",
+    "game.h": "c"
   },
   "makefile.buildLog": "build.log"
 }

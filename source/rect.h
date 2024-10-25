@@ -1,5 +1,7 @@
 /* Players and Ball Rectangles */
-struct rect {
+#pragma once
+typedef struct _rect rect;
+struct _rect {
 	int x;
 	int y;
 	int prevX;
