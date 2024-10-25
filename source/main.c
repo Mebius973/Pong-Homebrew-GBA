@@ -12,6 +12,8 @@ int main(void) {
 	/* Set GBA to Mode 3 (A Bitmap Mode) */
 	SetMode( MODE_3 | BG2_ON );
 
+    drawBackground();
+
 	/* Draw Center Line */
 	drawLine();
 

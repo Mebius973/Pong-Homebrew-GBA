@@ -1,5 +1,7 @@
 #include "characters.h"
 #include "rect.h"
+#include "background.h"
+#include <stdlib.h>
 
 #define MEM_VRAM        0x06000000
 #define SCREEN_WIDTH    240
@@ -12,9 +14,10 @@ typedef u16             M3LINE[SCREEN_WIDTH];
 #define BLACK            0x0000
 
 #define	PLAYER_WIDTH     8
-#define	PLAYER_HEIGHT    24
+#define	PLAYER_HEIGHT    36
 #define BALL_SIZE        5
-#define PLAYER_SPEED     2
+#define PLAYER_SPEED     1
+#define COMPUTER_SPEED   1
 #define BALL_SPEED       2
 #define CHARS_SIZE       8
 #define NUM_CHARS_LINE   SCREEN_WIDTH/CHARS_SIZE
@@ -41,7 +44,6 @@ void clearScreen() {
 		for (int j = 0; j < SCREEN_HEIGHT; j++) {
 			drawPixel(i, j, BLACK);
 		}
-		
 	}
 }
 
@@ -51,13 +53,21 @@ void drawLine() {
 	}	
 }
 
+void drawBackground() {
+	for (int i = 0; i < SCREEN_WIDTH; i++) {
+		for (int j = 0; j < SCREEN_HEIGHT; j++) {
+			drawPixel(i, j, backgroundBitmap[(j*SCREEN_WIDTH + i)/2]);
+		}
+	}
+}
+
 /* Print Individual Character (Normal Text) */
 void printChar(bool characterArray[64], int x, int y) {
     for (int i=0; i<8; i++) {
         for (int j=0; j<8; j++) {
-            int color = BLACK;
-            if (characterArray[i*8+j]) color = WHITE;
-            drawPixel(x + j, y + i, color);
+            if (characterArray[i*8+j]) {
+				drawPixel(x + j, y + i, WHITE);
+			}
         }
     }
 }
@@ -110,7 +120,7 @@ void drawRect(struct rect* cRect) {
 void clearPrevious(struct rect* cRect) {
 	for (int i = cRect->prevX; i < cRect->prevX + cRect->width; i++) {
 		for (int j = cRect->prevY; j < cRect->prevY + cRect->height; j++) {
-			drawPixel(i, j, BLACK);
+			drawPixel(i, j, backgroundBitmap[(j * SCREEN_WIDTH + i)/ 2]);
 		}		
 	}
 }
@@ -129,6 +139,7 @@ void moveBall() {
 		if (ball.y >= humanPlayer.y && ball.y <= humanPlayer.y + humanPlayer.height) {
 			/* Player caught the ball */
 			ball.velocityX = BALL_SPEED;
+			ball.velocityY = humanPlayer.velocityY;
 		} else {
 			/* Point Scored */
 			pointScored = true;
@@ -142,6 +153,7 @@ void moveBall() {
 		if(ball.y >= computerPlayer.y && ball.y <= computerPlayer.y + computerPlayer.height) {
 			/* Computer caught the ball */
 			ball.velocityX = -BALL_SPEED;
+			ball.velocityY = computerPlayer.velocityY;
 		} else {
 			/* Point Scored */
 			pointScored = true;
@@ -161,6 +173,38 @@ void moveBall() {
 }
 
 void moveComputer() {
+	// Need to introduce a dead zone to avoid paddle parkinsoning
+	if (ball.y >= computerPlayer.y + PLAYER_HEIGHT * 40 / 100 && ball.y <= computerPlayer.y + PLAYER_HEIGHT * 60 / 100) {
+		computerPlayer.velocityY = 0;
+	}
+
+	// Ball higher than paddle
+	if (ball.y < computerPlayer.y + PLAYER_HEIGHT * 40 / 100 ) {
+		computerPlayer.velocityY = -COMPUTER_SPEED;
+	}
+
+	// Ball lower than paddle
+	if (ball.y > computerPlayer.y + PLAYER_HEIGHT * 60 / 100 ) {
+		computerPlayer.velocityY = COMPUTER_SPEED;
+	}
+
+	// Ball touching the paddle
+	if(ball.y > computerPlayer.y && ball.y < computerPlayer.y + PLAYER_HEIGHT && ball.velocityX > 0 && (ball.x + BALL_SIZE) >= computerPlayer.x) {
+		// random number. Can be -1 or +1
+		float randomNumber = 2 * (rand() / (double) RAND_MAX) - 1;
+		int sign = 1;
+		if (randomNumber < 0 ) { sign = -1; }
+		computerPlayer.velocityY = sign * COMPUTER_SPEED;
+	}
+
+	// Stop computer when limits are reached
+	if ((computerPlayer.velocityY < 0 && computerPlayer.y < PLAYER_SPEED + 1 ) ||
+	    (computerPlayer.velocityY > 0 && computerPlayer.y > SCREEN_HEIGHT - computerPlayer.height - (PLAYER_SPEED + 1))) {
+		computerPlayer.velocityY = 0;
+	}
+
+	computerPlayer.y += computerPlayer.velocityY;
+	
 	clearPrevious(&computerPlayer);
 	drawRect(&computerPlayer);
 
@@ -204,6 +248,7 @@ void movePlayer(int keys_pressed, int keys_released) {
 
 void initGraphics(){
     clearScreen();
+	drawBackground();
 	drawLine();
 
 	humanPlayer.x = 1;
@@ -221,8 +266,8 @@ void initGraphics(){
 	computerPlayer.prevY = computerPlayer.y;
 	computerPlayer.width = PLAYER_WIDTH;
 	computerPlayer.height = PLAYER_HEIGHT;
-	humanPlayer.velocityX = 0;
-	humanPlayer.velocityY = 0;
+	computerPlayer.velocityX = 0;
+	computerPlayer.velocityY = 0;
 
 	ball.x = SCREEN_WIDTH/2 - BALL_SIZE/2;
 	ball.y = SCREEN_HEIGHT/2 - BALL_SIZE/2;
@@ -235,6 +280,11 @@ void initGraphics(){
 }
 
 void playGame(int keys_pressed, int keys_released) {
+	if (pointScored && keys_pressed) { 
+		pointScored = false;
+		initGraphics();
+	}
+
 	if (pointScored) {
 		displayText("POINT !", SCREEN_WIDTH/2 - 3*8, SCREEN_HEIGHT/2);
 	} else {
