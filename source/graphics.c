@@ -1,4 +1,3 @@
-
 #include <stdlib.h>
 #include <gba_video.h>
 #include "background.h"
@@ -7,16 +6,20 @@
 #include "graphics.h"
 #include "screen.h"
 
-#define MEM_VRAM        0x06000000
+#define MEM_VRAM                0x06000000
 
-typedef u16             M3LINE[SCREEN_WIDTH];
-#define m3_mem          ((M3LINE*)MEM_VRAM)
+typedef u16                     M3LINE[SCREEN_WIDTH];
+#define m3_mem                  ((M3LINE*)MEM_VRAM)
 
-#define WHITE            0x7FFF
-#define BLACK            0x0000
+#define WHITE                   0x7FFF
+#define BLACK                   0x0000
 
-#define CHARS_SIZE       8
-#define NUM_CHARS_LINE   SCREEN_WIDTH/CHARS_SIZE
+#define CHARS_SIZE              8
+#define NUM_CHARS_LINE          SCREEN_WIDTH/CHARS_SIZE
+
+#define BOXED_TEXT_HPADDING     3
+#define BOXED_TEXT_VPADDING     4
+#define SCORE_ANCHOR_Y          5
 
 #define min(a,b)             \
 ({                           \
@@ -24,6 +27,9 @@ typedef u16             M3LINE[SCREEN_WIDTH];
     __typeof__ (b) _b = (b); \
     _a < _b ? _a : _b;       \
 })
+
+char humanScore[10];
+char computerScore[10];
 
 void drawPixel(int x, int y, int color) {
 	m3_mem[y][x] = color;
@@ -121,6 +127,51 @@ void redrawRect(rect cRect) {
 	drawRect(cRect);
 }
 
+int lengthOfChar(char* text) {
+    int length = 0;
+    while (text[length] != '\0') length++;
+    return length;
+}
+
+void clearText(char textBuffer[], int x, int y) {
+    for (int i = 0; i < lengthOfChar(textBuffer) * CHARS_SIZE; i++) {
+        for (int j = 0; j < CHARS_SIZE; j++) {
+            drawPixel(x + i, y + j, backgroundBitmap[(j * SCREEN_WIDTH + i)/ 2]);
+        }
+    }
+}
+
+void drawScoreBox() {
+    for (int i = -BOXED_TEXT_HPADDING; i < CHARS_SIZE + BOXED_TEXT_HPADDING; i++) {
+        // TOP
+        drawPixel(SCREEN_WIDTH/4 - CHARS_SIZE / 2 + i, SCORE_ANCHOR_Y - BOXED_TEXT_VPADDING, WHITE);
+        drawPixel(SCREEN_WIDTH * 3/4 - CHARS_SIZE / 2 + i, SCORE_ANCHOR_Y - BOXED_TEXT_VPADDING, WHITE);
+
+        // BOTTOM
+        drawPixel(SCREEN_WIDTH/4 - CHARS_SIZE / 2 + i, SCORE_ANCHOR_Y + CHARS_SIZE + BOXED_TEXT_VPADDING - 1, WHITE);
+        drawPixel(SCREEN_WIDTH * 3/4 - CHARS_SIZE / 2 + i, SCORE_ANCHOR_Y + CHARS_SIZE + BOXED_TEXT_VPADDING - 1, WHITE);    
+    }
+
+    for (int j = -BOXED_TEXT_VPADDING; j < CHARS_SIZE + BOXED_TEXT_VPADDING; j++) {
+        // LEFT
+        drawPixel(SCREEN_WIDTH/4 - CHARS_SIZE / 2 - BOXED_TEXT_HPADDING, SCORE_ANCHOR_Y + j, WHITE);
+        drawPixel(SCREEN_WIDTH * 3/4 - CHARS_SIZE / 2 - BOXED_TEXT_HPADDING, SCORE_ANCHOR_Y + j, WHITE);
+
+        // RIGHT
+        drawPixel(SCREEN_WIDTH/4 + CHARS_SIZE / 2 + BOXED_TEXT_HPADDING - 1, SCORE_ANCHOR_Y + j, WHITE);
+        drawPixel(SCREEN_WIDTH * 3/4 + CHARS_SIZE / 2 + BOXED_TEXT_HPADDING - 1, SCORE_ANCHOR_Y + j, WHITE);
+    }
+}
+
+void drawScore() {
+    __itoa(sharedGameState.humanScore, humanScore, 10);
+    __itoa(sharedGameState.computerScore, computerScore, 10);
+    clearText(humanScore, SCREEN_WIDTH/4 - CHARS_SIZE / 2, 5);
+    clearText(computerScore, SCREEN_WIDTH/4 - CHARS_SIZE / 2, 5);
+    displayText(humanScore, SCREEN_WIDTH/4 - CHARS_SIZE / 2, 5);
+    displayText(computerScore, SCREEN_WIDTH * 3/4 - CHARS_SIZE / 2, 5);
+}
+
 void initGraphics() {
 	/* Set GBA to Mode 3 (A Bitmap Mode) */
 	SetMode( MODE_3 | BG2_ON );
@@ -131,12 +182,21 @@ void initGraphics() {
 	drawLine();
 
 	/* print "Press start button" */
-	displayStartText();	
+	displayStartText();
 }
 
 void drawGraphics() {
+    drawScore();
     if (sharedGameState.pointScored) {
-            displayText("POINT !", SCREEN_WIDTH/2 - 3*8, SCREEN_HEIGHT/2);
+        char* text = "POINT !";
+        if (sharedGameState.humanWins) {
+            text = "YOU WIN !";
+        }
+        if (sharedGameState.computerWins) {
+            text = "YOU LOSE !";
+        }
+        
+        displayText(text, SCREEN_WIDTH/2 - lengthOfChar(text)/2*8, SCREEN_HEIGHT/2);
     } else {
         redrawRect(sharedGameState.ball);
         redrawRect(sharedGameState.computerPlayer);
@@ -145,7 +205,8 @@ void drawGraphics() {
 }
 
 void drawInitialGraphics() {
-    clearScreen();
 	drawBackground();
 	drawLine();
+    drawScoreBox();
+    drawScore();
 }

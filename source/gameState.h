@@ -10,7 +10,7 @@ struct _gameState {
 	bool gameStarted;
     bool pointScored;
 	bool nextGame;
-	bool playerWins;
+	bool humanWins;
 	bool computerWins;
  	int humanScore;
 	int computerScore;

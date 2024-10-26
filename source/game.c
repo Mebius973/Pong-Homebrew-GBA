@@ -10,6 +10,7 @@
 #define PLAYER_SPEED     1
 #define COMPUTER_SPEED   1
 #define BALL_SPEED       2
+#define MAX_POINT        10
 
 void moveBall() {
 	sharedGameState.ball.prevX = sharedGameState.ball.x;
@@ -33,6 +34,7 @@ void moveBall() {
 			/* Point Scored */
 			sharedGameState.pointScored = true;
 			sharedGameState.computerScore += 1;
+			if (sharedGameState.computerScore == MAX_POINT) { sharedGameState.computerWins = true; }
 			sharedGameState.ball.velocityX = 0;
 			sharedGameState.ball.velocityY = 0;
 		}
@@ -48,6 +50,7 @@ void moveBall() {
 			/* Point Scored */
 			sharedGameState.pointScored = true;
 			sharedGameState.humanScore += 1;
+			if (sharedGameState.humanScore == MAX_POINT) { sharedGameState.humanWins = true; }
 			sharedGameState.ball.velocityX = 0;
 			sharedGameState.ball.velocityY = 0;
 		}
