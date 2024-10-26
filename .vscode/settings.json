@@ -37,7 +37,9 @@
     "characters.h": "c",
     "rect.h": "c",
     "limits": "c",
-    "game.h": "c"
+    "game.h": "c",
+    "gamestate.h": "c",
+    "stdbool.h": "c"
   },
   "makefile.buildLog": "build.log"
 }

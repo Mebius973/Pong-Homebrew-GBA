@@ -1,9 +1,10 @@
 
 #include <stdlib.h>
 #include <gba_video.h>
-#include "graphics.h"
-#include "characters.h"
 #include "background.h"
+#include "characters.h"
+#include "gameState.h"
+#include "graphics.h"
 #include "screen.h"
 
 #define MEM_VRAM        0x06000000
@@ -23,7 +24,6 @@ typedef u16             M3LINE[SCREEN_WIDTH];
     __typeof__ (b) _b = (b); \
     _a < _b ? _a : _b;       \
 })
-
 
 void drawPixel(int x, int y, int color) {
 	m3_mem[y][x] = color;
@@ -99,29 +99,29 @@ void displayStartText() {
 }
 
 /* Draw Player / Ball */
-void drawRect(rect* cRect) {
-	for (int i = cRect->x; i < cRect->x + cRect->width; i++) {
-		for (int j = cRect->y; j < cRect->y + cRect->height; j++) {
+void drawRect(rect cRect) {
+	for (int i = cRect.x; i < cRect.x + cRect.width; i++) {
+		for (int j = cRect.y; j < cRect.y + cRect.height; j++) {
 			drawPixel(i, j, 0x7FFF);
 		}		
 	}
 }
 
-void clearPrevious(rect* cRect) {
-	for (int i = cRect->prevX; i < cRect->prevX + cRect->width; i++) {
-		for (int j = cRect->prevY; j < cRect->prevY + cRect->height; j++) {
+void clearPrevious(rect cRect) {
+	for (int i = cRect.prevX; i < cRect.prevX + cRect.width; i++) {
+		for (int j = cRect.prevY; j < cRect.prevY + cRect.height; j++) {
 			drawPixel(i, j, backgroundBitmap[(j * SCREEN_WIDTH + i)/ 2]);
 		}		
 	}
 }
 
-void redrawRect(rect* cRect) {
+void redrawRect(rect cRect) {
 	clearPrevious(cRect);
     drawLine();
 	drawRect(cRect);
 }
 
-void drawSplashscreen() {
+void initGraphics() {
 	/* Set GBA to Mode 3 (A Bitmap Mode) */
 	SetMode( MODE_3 | BG2_ON );
 
@@ -134,13 +134,13 @@ void drawSplashscreen() {
 	displayStartText();	
 }
 
-void drawGraphics(bool pointScored, rect* ball, rect* computerPlayer, rect* humanPlayer) {
-    if (pointScored) {
+void drawGraphics() {
+    if (sharedGameState.pointScored) {
             displayText("POINT !", SCREEN_WIDTH/2 - 3*8, SCREEN_HEIGHT/2);
     } else {
-        redrawRect(ball);
-        redrawRect(computerPlayer);
-        redrawRect(humanPlayer);
+        redrawRect(sharedGameState.ball);
+        redrawRect(sharedGameState.computerPlayer);
+        redrawRect(sharedGameState.humanPlayer);
     }
 }
 
