@@ -7,13 +7,17 @@ struct _gameState {
 	rect ball;
 	rect computerPlayer;
 	rect humanPlayer;
-	bool gameStarted;
-    bool pointScored;
-	bool nextGame;
-	bool humanWins;
-	bool computerWins;
- 	int humanScore;
+
 	int computerScore;
+	int humanScore;
+	
+	bool computerWins;
+	bool gameStarted;
+	bool humanWins;
+	bool nextGame;
+	bool pointScored;
+	bool readyTextCleared;
+	bool setStarted;
 };
 
 extern gameState sharedGameState;

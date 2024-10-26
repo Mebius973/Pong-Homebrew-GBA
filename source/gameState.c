@@ -3,9 +3,11 @@
 gameState sharedGameState;
 
 void initGameState() {
-    sharedGameState.gameStarted = false;
-    sharedGameState.pointScored = false;
-	sharedGameState.nextGame = false;
-	sharedGameState.humanWins = false;
 	sharedGameState.computerWins = false;
+    sharedGameState.gameStarted = false;
+	sharedGameState.humanWins = false;
+	sharedGameState.nextGame = false;
+    sharedGameState.pointScored = false;
+	sharedGameState.readyTextCleared = false;
+	sharedGameState.setStarted = false;
 }

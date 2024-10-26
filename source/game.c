@@ -4,13 +4,18 @@
 #include "gameState.h"
 #include "screen.h"
 
-#define	PLAYER_WIDTH     8
-#define	PLAYER_HEIGHT    36
 #define BALL_SIZE        5
-#define PLAYER_SPEED     1
-#define COMPUTER_SPEED   1
-#define BALL_SPEED       2
-#define MAX_POINT        10
+
+#define	PLAYER_HEIGHT    36
+#define	PLAYER_WIDTH     8
+
+#define BALL_SPEED       3
+#define COMPUTER_SPEED   3
+#define PLAYER_SPEED     2
+
+#define MAX_POINT        3
+
+bool keyAPressed = false;
 
 void moveBall() {
 	sharedGameState.ball.prevX = sharedGameState.ball.x;
@@ -126,14 +131,14 @@ void movePlayer(int keys_pressed, int keys_released) {
 }
 
 void initGame() {
-	sharedGameState.humanPlayer.x = 1;
-	sharedGameState.humanPlayer.y = SCREEN_HEIGHT/2 - PLAYER_HEIGHT/2;
-	sharedGameState.humanPlayer.prevX = sharedGameState.humanPlayer.x;
-	sharedGameState.humanPlayer.prevY = sharedGameState.humanPlayer.y;
-	sharedGameState.humanPlayer.width = PLAYER_WIDTH;
-	sharedGameState.humanPlayer.height = PLAYER_HEIGHT;
-	sharedGameState.humanPlayer.velocityX = 0;
-	sharedGameState.humanPlayer.velocityY = 0;
+	sharedGameState.ball.x = SCREEN_WIDTH/2 - BALL_SIZE/2;
+	sharedGameState.ball.y = SCREEN_HEIGHT/2 - BALL_SIZE/2;
+	sharedGameState.ball.prevX = sharedGameState.ball.x;
+	sharedGameState.ball.prevY = sharedGameState.ball.y;
+	sharedGameState.ball.width = BALL_SIZE;	
+	sharedGameState.ball.height = BALL_SIZE;
+	sharedGameState.ball.velocityX = 0;
+	sharedGameState.ball.velocityY = 0;
 
 	sharedGameState.computerPlayer.x = SCREEN_WIDTH - PLAYER_WIDTH - 1;
 	sharedGameState.computerPlayer.y = SCREEN_HEIGHT/2 - PLAYER_HEIGHT/2;
@@ -144,28 +149,53 @@ void initGame() {
 	sharedGameState.computerPlayer.velocityX = 0;
 	sharedGameState.computerPlayer.velocityY = 0;
 
-	sharedGameState.ball.x = SCREEN_WIDTH/2 - BALL_SIZE/2;
-	sharedGameState.ball.y = SCREEN_HEIGHT/2 - BALL_SIZE/2;
-	sharedGameState.ball.prevX = sharedGameState.ball.x;
-	sharedGameState.ball.prevY = sharedGameState.ball.y;
-	sharedGameState.ball.width = BALL_SIZE;	
-	sharedGameState.ball.height = BALL_SIZE;
-	sharedGameState.ball.velocityX = -BALL_SPEED;
-	sharedGameState.ball.velocityY = 0;
+	sharedGameState.humanPlayer.x = 1;
+	sharedGameState.humanPlayer.y = SCREEN_HEIGHT/2 - PLAYER_HEIGHT/2;
+	sharedGameState.humanPlayer.prevX = sharedGameState.humanPlayer.x;
+	sharedGameState.humanPlayer.prevY = sharedGameState.humanPlayer.y;
+	sharedGameState.humanPlayer.width = PLAYER_WIDTH;
+	sharedGameState.humanPlayer.height = PLAYER_HEIGHT;
+	sharedGameState.humanPlayer.velocityX = 0;
+	sharedGameState.humanPlayer.velocityY = 0;
 }
 
-void playGame(int keys_pressed,
-              int keys_released) {
+void playGame(int keys_pressed, int keys_released) {
+	if (keys_released == KEY_A) {
+		keyAPressed = false;
+	}
 
-    if (sharedGameState.pointScored && keys_pressed) { 
+    if ((sharedGameState.humanWins || sharedGameState.computerWins) && keys_pressed) { 
+		sharedGameState.computerScore = 0;
+		sharedGameState.computerWins = false;
+		sharedGameState.humanScore = 0;
+		sharedGameState.humanWins = false;
 		sharedGameState.nextGame = true;
 		sharedGameState.pointScored = false;
+		sharedGameState.setStarted = false;
 		initGame();
+		if (keys_pressed == KEY_A) { 
+			keyAPressed = true; 
+		}
+	}
+	
+	if (sharedGameState.pointScored && keys_pressed) { 
+		sharedGameState.nextGame = true;
+		sharedGameState.pointScored = false;
+		sharedGameState.setStarted = false;
+		initGame();
+		if (keys_pressed == KEY_A) { 
+			keyAPressed = true; 
+		}
+	}
+
+	if (!sharedGameState.setStarted && !keyAPressed && keys_pressed == KEY_A) {
+		sharedGameState.ball.velocityX = -BALL_SPEED;
+		sharedGameState.setStarted = true;
 	}
 
 	if (!sharedGameState.pointScored) {
-		movePlayer(keys_pressed, keys_released);
 		moveBall();
 		moveComputer();
+		movePlayer(keys_pressed, keys_released);
 	}
 }

@@ -59,9 +59,9 @@ void drawBackground() {
 
 /* Print Individual Character (Normal Text) */
 void printChar(bool characterArray[64], int x, int y) {
-    for (int i=0; i<8; i++) {
-        for (int j=0; j<8; j++) {
-            if (characterArray[i*8+j]) {
+    for (int i = 0; i < CHARS_SIZE; i++) {
+        for (int j = 0; j < CHARS_SIZE; j++) {
+            if (characterArray[i * CHARS_SIZE + j]) {
 				drawPixel(x + j, y + i, WHITE);
 			}
         }
@@ -92,7 +92,7 @@ void displayText(char textBuffer[], int x, int y) {
             printChar(punctuation[0], x+i*8, y);
         // Numbers
         } else if (textBuffer[i] >= 0x30 && textBuffer[i] <= 0x39) { 		
-            printChar(score[textBuffer[i] - 0x30], x+i*8, y);
+            printChar(number[textBuffer[i] - 0x30], x+i*8, y);
         // Letters
         } else {
             printChar(alphabet[textBuffer[i] - 0x41], x+i*8, y); 			
@@ -101,21 +101,34 @@ void displayText(char textBuffer[], int x, int y) {
 }
 
 void displayStartText() {
-    displayText("PRESS START BUTTON", SCREEN_WIDTH/2 - 9*8, SCREEN_HEIGHT/2);
+    displayText("PRESS START BUTTON", SCREEN_WIDTH/2 - 9 * CHARS_SIZE, SCREEN_HEIGHT/2);
+}
+
+void displayReadyText() {
+    sharedGameState.readyTextCleared = false;
+    displayText("PRESS A WHEN READY", SCREEN_WIDTH/2 - 9 * CHARS_SIZE, SCREEN_HEIGHT/2 + CHARS_SIZE + 5);
+}
+
+void clearReadyText() {
+    for (int j = SCREEN_HEIGHT/2 + CHARS_SIZE + 5; j < SCREEN_HEIGHT/2 + 2* CHARS_SIZE + 5; j++) { 
+    for (int i = SCREEN_WIDTH/2 - 9 * CHARS_SIZE; i < SCREEN_WIDTH/2 + 9 * CHARS_SIZE; i++) {
+            drawPixel(i, j, backgroundBitmap[(j*SCREEN_WIDTH + i)/2]);
+        }   
+    }
 }
 
 /* Draw Player / Ball */
 void drawRect(rect cRect) {
-	for (int i = cRect.x; i < cRect.x + cRect.width; i++) {
-		for (int j = cRect.y; j < cRect.y + cRect.height; j++) {
-			drawPixel(i, j, 0x7FFF);
+    for (int j = cRect.y; j < cRect.y + cRect.height; j++) {
+	    for (int i = cRect.x; i < cRect.x + cRect.width; i++) {
+			drawPixel(i, j, WHITE);
 		}		
 	}
 }
 
 void clearPrevious(rect cRect) {
-	for (int i = cRect.prevX; i < cRect.prevX + cRect.width; i++) {
-		for (int j = cRect.prevY; j < cRect.prevY + cRect.height; j++) {
+    for (int j = cRect.prevY; j < cRect.prevY + cRect.height; j++) {
+	    for (int i = cRect.prevX; i < cRect.prevX + cRect.width; i++) {
 			drawPixel(i, j, backgroundBitmap[(j * SCREEN_WIDTH + i)/ 2]);
 		}		
 	}
@@ -123,7 +136,6 @@ void clearPrevious(rect cRect) {
 
 void redrawRect(rect cRect) {
 	clearPrevious(cRect);
-    drawLine();
 	drawRect(cRect);
 }
 
@@ -141,35 +153,26 @@ void clearText(char textBuffer[], int x, int y) {
     }
 }
 
-void drawScoreBox() {
-    for (int i = -BOXED_TEXT_HPADDING; i < CHARS_SIZE + BOXED_TEXT_HPADDING; i++) {
-        // TOP
-        drawPixel(SCREEN_WIDTH/4 - CHARS_SIZE / 2 + i, SCORE_ANCHOR_Y - BOXED_TEXT_VPADDING, WHITE);
-        drawPixel(SCREEN_WIDTH * 3/4 - CHARS_SIZE / 2 + i, SCORE_ANCHOR_Y - BOXED_TEXT_VPADDING, WHITE);
+void printScore(bool humanScore[288], bool computerScore[288]) {
+    for (int row = 0; row < 18; row++) {
+        for (int column = 0; column < 16; column++) {
+            int humanScoreColor = backgroundBitmap[(row * SCREEN_WIDTH + SCREEN_WIDTH/4 - CHARS_SIZE / 2 + column)/2];
+            int computerScoreColor = backgroundBitmap[(row * SCREEN_WIDTH + SCREEN_WIDTH * 3/4 - CHARS_SIZE / 2 + column)/2];
 
-        // BOTTOM
-        drawPixel(SCREEN_WIDTH/4 - CHARS_SIZE / 2 + i, SCORE_ANCHOR_Y + CHARS_SIZE + BOXED_TEXT_VPADDING - 1, WHITE);
-        drawPixel(SCREEN_WIDTH * 3/4 - CHARS_SIZE / 2 + i, SCORE_ANCHOR_Y + CHARS_SIZE + BOXED_TEXT_VPADDING - 1, WHITE);    
-    }
+            if (humanScore[row * 16 + column]) humanScoreColor = WHITE;
+            if (computerScore[row * 16 + column]) computerScoreColor = WHITE;
 
-    for (int j = -BOXED_TEXT_VPADDING; j < CHARS_SIZE + BOXED_TEXT_VPADDING; j++) {
-        // LEFT
-        drawPixel(SCREEN_WIDTH/4 - CHARS_SIZE / 2 - BOXED_TEXT_HPADDING, SCORE_ANCHOR_Y + j, WHITE);
-        drawPixel(SCREEN_WIDTH * 3/4 - CHARS_SIZE / 2 - BOXED_TEXT_HPADDING, SCORE_ANCHOR_Y + j, WHITE);
-
-        // RIGHT
-        drawPixel(SCREEN_WIDTH/4 + CHARS_SIZE / 2 + BOXED_TEXT_HPADDING - 1, SCORE_ANCHOR_Y + j, WHITE);
-        drawPixel(SCREEN_WIDTH * 3/4 + CHARS_SIZE / 2 + BOXED_TEXT_HPADDING - 1, SCORE_ANCHOR_Y + j, WHITE);
+            drawPixel(SCREEN_WIDTH/4 - CHARS_SIZE / 2 + column, 5 + row, humanScoreColor);
+			drawPixel(SCREEN_WIDTH * 3/4 - CHARS_SIZE / 2 + column, 5 + row, computerScoreColor);
+        }
     }
 }
 
 void drawScore() {
     __itoa(sharedGameState.humanScore, humanScore, 10);
     __itoa(sharedGameState.computerScore, computerScore, 10);
-    clearText(humanScore, SCREEN_WIDTH/4 - CHARS_SIZE / 2, 5);
-    clearText(computerScore, SCREEN_WIDTH/4 - CHARS_SIZE / 2, 5);
-    displayText(humanScore, SCREEN_WIDTH/4 - CHARS_SIZE / 2, 5);
-    displayText(computerScore, SCREEN_WIDTH * 3/4 - CHARS_SIZE / 2, 5);
+    //clearScore();
+    printScore(score[humanScore[0] - 0x30], score[computerScore[0] - 0x30]);
 }
 
 void initGraphics() {
@@ -186,27 +189,37 @@ void initGraphics() {
 }
 
 void drawGraphics() {
-    drawScore();
+    if (sharedGameState.setStarted && !sharedGameState.readyTextCleared) {
+        clearReadyText();
+        sharedGameState.readyTextCleared = true;
+    }
+
     if (sharedGameState.pointScored) {
-        char* text = "POINT !";
+        char* text1 = "POINT !";
         if (sharedGameState.humanWins) {
-            text = "YOU WIN !";
+            text1 = "YOU WIN !";
         }
         if (sharedGameState.computerWins) {
-            text = "YOU LOSE !";
+            text1 = "YOU LOSE !";
         }
         
-        displayText(text, SCREEN_WIDTH/2 - lengthOfChar(text)/2*8, SCREEN_HEIGHT/2);
+        displayText(text1, SCREEN_WIDTH/2 - lengthOfChar(text1)/2*8, SCREEN_HEIGHT/2);
+
+        char* text2 = "PRESS ANY KEY TO CONTINUE";
+        displayText(text2, SCREEN_WIDTH/2 - lengthOfChar(text2)/2*8, SCREEN_HEIGHT/2 + CHARS_SIZE + 5);
     } else {
         redrawRect(sharedGameState.ball);
         redrawRect(sharedGameState.computerPlayer);
         redrawRect(sharedGameState.humanPlayer);
     }
+
+    drawScore();
+    drawLine();
 }
 
 void drawInitialGraphics() {
 	drawBackground();
 	drawLine();
-    drawScoreBox();
     drawScore();
+    displayReadyText();
 }

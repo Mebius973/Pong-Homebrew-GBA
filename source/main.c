@@ -1,6 +1,6 @@
+#include <gba_input.h>
 #include <gba_interrupt.h>
 #include <gba_systemcalls.h>
-#include <gba_input.h>
 #include "game.h"
 #include "gameState.h"
 #include "graphics.h"
@@ -8,9 +8,11 @@
 int main(void) {
 	irqInit();
 	irqEnable(IRQ_VBLANK);
+
 	initGameState();
-	initGraphics();
+
 	initGame();
+	initGraphics();
 
 	while (1) {
 		VBlankIntrWait();
